@@ -1,0 +1,2 @@
+exclusions "gci-parent-name"
+types "gci-parent-name/types"

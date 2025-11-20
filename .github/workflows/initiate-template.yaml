@@ -1,0 +1,62 @@
+name: Initializing New GCI
+run-name: Initiate from template
+on:
+  push:
+    branches:
+      - main
+jobs:
+  get_current_step:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Get current step
+        run: |
+          echo "current-step=$(cat ./scripts/STEP)" >> $GITHUB_OUTPUT
+
+  start:
+    needs: get_current_step
+    if: >-
+      ${{ !github.event.repository.is_template && needs.get_current_step.outputs.current-step == 0 }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Check current step
+        run: |
+          if [ "$(cat ./scripts/STEP)" != 0 ]; then
+            echo "Step is not at Initializing state"
+            exit 0
+          else
+            echo "Free to go"
+          fi
+
+      - name: Make script executable
+        run: chmod +x ./scripts/initiating.sh
+
+      - name: Run script
+        run: ./scripts/initiating.sh
+
+      - name: Clean up script and workflow
+        run: |
+          echo "Removing script and STEP files"
+          rm -f "./scripts/initiating.sh"
+          rm -f "./scripts/STEP"
+
+          echo "Removing workflow file"
+          rm -f "./.github/workflows/initiate-template.yaml"
+
+          echo "Make a commit"
+          git config user.name github-automation-bomsiwor[bot]
+          git config user.email github-automation@unipin.bot
+
+          echo "Stage changes"
+          git add -A
+
+          echo "Commit"
+          git commit -m "feat: initializing $REPO_NAME project"
+
+          echo "Pushing to main branch"
+          git push origin main

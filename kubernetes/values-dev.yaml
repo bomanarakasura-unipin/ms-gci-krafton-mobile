@@ -1,0 +1,47 @@
+nameOverride: imagename
+fullnameOverride: imagename
+
+# DEFAULT VALUE
+terminationGracePeriodSeconds: 620
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+  initialDelaySeconds: 5
+  failureThreshold: 60
+  timeoutSeconds: 5
+  annotations:
+    cloud.google.com/backend-config: '{"ports": {"80":"imagename"}}'
+    cloud.google.com/neg: '{"ingress": true}'
+# DEFAULT VALUE
+backendconfig:
+  enabled: true
+  healthCheckPath: /actuator/health
+  healthCheckPort: 8080
+  healthCheckType: HTTP
+  loggingEnabled: true
+  loggingSampleRate: 1
+  securityPolicy: "securityname"
+envFrom: imagename
+secretFilesFrom: imagename-files
+
+image:
+  repository: nginx # Replaced on pipeline*
+  tag: "" # Replaced on pipeline*
+  pullPolicy: Always #IfNotPresent
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+replicaCount: 1
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPUUtilizationPercentage: 75
+#  targetMemoryUtilizationPercentage: 75 # Don't use for JAVA
